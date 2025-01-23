@@ -1,0 +1,6 @@
+@Events.DataService_HostAddress = http://localhost:5058
+
+GET {{Events.DataService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
