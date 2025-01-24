@@ -1,0 +1,164 @@
+version:  "3.9"
+services:
+  api-gateway:
+    container_name: main-api
+    build:
+      context:  .
+      dockerfile: FitnessTracker.API/Dockerfile
+    expose:
+      - "8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://*:8080
+      - JWT_SECRET=fitness_tracker_super_secret_key
+      - RequireDependencies=true
+    depends_on:
+      - api-auth-service
+      - api-request-service
+    networks:
+      - fitness-network
+
+  api-auth-service:
+    container_name: auth-service
+    build:
+      context:  .
+      dockerfile: FitnessTracker.AuthenticationService/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://*:8081
+      - JWT_SECRET=fitness_tracker_super_secret_key
+      - CONNECTION_STRING=Host=db;Port=5432;Database=fitnessdb;Username=user;Password=abcd12345!
+      - RequireDependencies=true
+    expose:
+      - "8081"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - fitness-network
+
+  api-request-service:
+    container_name: request-service
+    build:
+      context:  .
+      dockerfile: FitnessTracker.RequestService/Dockerfile
+    expose:
+      - "8082"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://*:8082
+      - REMOTE_HOST=rabbit-mq
+      - REMOTE_USER=aboba
+      - REMOTE_PASS=booba
+      - REMOTE_PORT=5672
+      - RequireDependencies=true
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fitness-network
+
+  api-workout-data-service:
+    container_name: workout-data-service
+    build:
+      context:  .
+      dockerfile: FitnessTracker.WorkoutDataService/Dockerfile
+    expose:
+      - "8083"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://*:8083
+      - REMOTE_HOST=rabbit-mq
+      - REMOTE_USER=aboba
+      - REMOTE_PASS=booba
+      - REMOTE_PORT=5672
+      - CONNECTION_STRING=Host=db;Port=5432;Database=fitnessdb;Username=user;Password=abcd12345!
+      - RequireDependencies=true
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fitness-network
+
+
+  api-workout-statistics-service:
+    container_name: workout-statistics-service
+    build:
+      context:  .
+      dockerfile: FitnessTracker.StatisticsService/Dockerfile
+    expose:
+      - "8084"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://*:8084
+      - REMOTE_HOST=rabbit-mq
+      - REMOTE_USER=aboba
+      - REMOTE_PASS=booba
+      - REMOTE_PORT=5672
+      - CONNECTION_STRING=Host=db;Port=5432;Database=fitnessdb;Username=user;Password=abcd12345!
+      - RequireDependencies=true
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fitness-network
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - fitness-network
+    depends_on:
+      - api-gateway
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - ./nginx/mime.types:/etc/nginx/mime.types
+      - ./nginx/setup.sh:/docker-entrypoint.d/setup.sh
+      - ./nginx/certs:/certs
+    command: ["sh", "/docker-entrypoint.d/setup.sh"]
+
+  rabbitmq:
+    container_name: rabbit-mq
+    image: "rabbitmq:management"
+    environment:
+      RABBITMQ_DEFAULT_USER: aboba
+      RABBITMQ_DEFAULT_PASS: booba
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fitness-network
+
+  db:
+    container_name: fitnesstracker-db
+    image:  postgres:latest
+    environment:
+      POSTGRES_USER:  "user"
+      POSTGRES_PASSWORD:  "abcd12345!"
+      POSTGRES_DB:  "fitnessdb"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fitness-network
+
+volumes:
+  postgres-data:
+    
+networks:
+  fitness-network:
+    driver: bridge

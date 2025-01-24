@@ -10,7 +10,8 @@
         public string Location { get; } = string.Empty;
         public string Category { get; } = string.Empty;
         public uint MaxParticipants { get; } = 0;
-        public ICollection<Participant> Participants { get; } = new List<Participant>();
+        public string ImagePath { get; private set; } = string.Empty;
+        public ICollection<Participant> Participants { get; } = null!;
         private Event
             (Guid id, string name, string description, DateOnly date, TimeOnly time,
             string location, string category, uint maxParticipants, ICollection<Participant> participants)
@@ -29,6 +30,10 @@
             string location, string category, uint maxParticipants, ICollection<Participant> participants)
         {
             return new Event(id, name, description, date, time, location, category, maxParticipants, participants);
+        }
+        public void AttachImage(string path)
+        {
+            ImagePath = path;
         }
     }
 }
