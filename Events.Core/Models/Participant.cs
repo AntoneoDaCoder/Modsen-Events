@@ -2,26 +2,22 @@
 {
     public class Participant
     {
-        public Guid Id { get; }
+        public Guid Id { get; } = Guid.Empty;
         public string Name { get; } = string.Empty;
         public string Surname { get; } = string.Empty;
         public DateOnly BirthDate { get; } = DateOnly.MinValue;
-        public DateOnly EventRegistrationDate { get; } = DateOnly.MinValue;
         public string Email { get; } = string.Empty;
-        public ICollection<Event> Events { get; } = null!;
-        private Participant(Guid id, string name, string surname, DateOnly birthDate, DateOnly eventRegistrationDate, string email, ICollection<Event> events)
+        private Participant(Guid id, string name, string surname, DateOnly birthDate,  string email)
         {
             Id = id;
             Name = name;
             Surname = surname;
             BirthDate = birthDate;
-            EventRegistrationDate = eventRegistrationDate;
             Email = email;
-            Events = events;
         }
-        static public Participant CreateParticipant(Guid id, string name, string surname, DateOnly birthDate, DateOnly eventRegistrationDate, string email, ICollection<Event> events)
+        static public Participant CreateParticipant(Guid id, string name, string surname, DateOnly birthDate,  string email)
         {
-            return new Participant(id, name, surname, birthDate, eventRegistrationDate, email, events);
+            return new Participant(id, name, surname, birthDate, email);
         }
 
     }

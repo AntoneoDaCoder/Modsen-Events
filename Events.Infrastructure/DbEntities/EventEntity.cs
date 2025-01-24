@@ -1,4 +1,4 @@
-﻿using Events.Core.Models;
+﻿
 namespace Events.Infrastructure.DbEntities
 {
     public class EventEntity
@@ -13,6 +13,5 @@ namespace Events.Infrastructure.DbEntities
         public uint MaxParticipants { get; set; } = 0;
         public string ImagePath { get; set; } = string.Empty;
         public ICollection<EventParticipantEntity> EventParticipants { get; set; } = new List<EventParticipantEntity>();
-        public ICollection<ParticipantEntity> Participants => EventParticipants.Select(p => p.Participant).ToList();
     }
 }

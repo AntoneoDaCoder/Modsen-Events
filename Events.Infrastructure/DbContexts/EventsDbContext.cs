@@ -7,7 +7,7 @@ namespace Events.Infrastructure.DbContexts
     public class EventsDbContext : IdentityDbContext<ParticipantEntity>
     {
         public DbSet<EventEntity> Events { get; set; }
-        public DbSet<EventParticipantEntity> EventPaticipants { get; set; }
+        public DbSet<EventParticipantEntity> EventParticipants { get; set; }
         public EventsDbContext(DbContextOptions<EventsDbContext> options) : base(options)
         {
         }
