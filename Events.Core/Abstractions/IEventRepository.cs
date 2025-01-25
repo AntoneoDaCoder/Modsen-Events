@@ -10,6 +10,6 @@ namespace Events.Core.Abstractions
         Task<(bool, IEnumerable<string>)> CreateAsync(Event ev);
         Task<(bool, IEnumerable<string>)> UpdateAsync(Guid id, Event ev);
         Task<(bool, IEnumerable<string>)> DeleteAsync(Guid id);
-        Task<(List<Event>, IEnumerable<string>)> GetByCriteriaAsync(Expression<Func<Event, bool>>? filter);
+        Task<(List<Event>, IEnumerable<string>)> GetByCriterionAsync(Expression<Func<Event, bool>>? filter);
     }
 }
