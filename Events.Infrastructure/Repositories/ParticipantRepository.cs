@@ -12,23 +12,23 @@ namespace Events.Infrastructure.Repositories
         {
             _participantsManager = participantsManager;
         }
-        public async Task<List<Participant>> GetAsync(Guid? id)
+        public async Task<Participant?> GetByIdAsync(Guid id)
         {
-            if (id is null)
-            {
-                var participantEntities = await _participantsManager.Users.AsNoTracking().ToListAsync();
-                return participantEntities
-                    .Select(p => Participant.CreateParticipant(Guid.Parse(p.Id), p.UserName!, p.Surname, p.BirthDate, p.Email!)).ToList();
-            }
-            var p = await _participantsManager.FindByIdAsync(id.ToString()!);
-            if (p is not null)
-                return new List<Participant> { Participant.CreateParticipant(Guid.Parse(p.Id), p.UserName!, p.Surname, p.BirthDate, p.Email!) };
-            return new();
+            var pEntity = await _participantsManager.FindByIdAsync(id.ToString()!);
+            if (pEntity is not null)
+                return Participant.CreateParticipant(Guid.Parse(pEntity.Id), pEntity.UserName!, pEntity.Surname, pEntity.BirthDate, pEntity.Email!);
+            return null;
+        }
+        public async Task<List<Participant>> GetPagedAsync(int index, int pageSize)
+        {
+            var participantEntities = await _participantsManager.Users.AsNoTracking().Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
+            return participantEntities.Select(e => Participant.CreateParticipant(Guid.Parse(e.Id), e.UserName!, e.Surname, e.BirthDate, e.Email!)).ToList();
         }
         public async Task<(bool, IEnumerable<string>)> CreateAsync(Participant participant, string password)
         {
             var participantEntity = new ParticipantEntity()
             {
+                //auto mapper here
                 Email = participant.Email,
                 UserName = participant.Name,
                 Surname = participant.Surname,
@@ -42,6 +42,7 @@ namespace Events.Infrastructure.Repositories
             var pEntity = await _participantsManager.FindByIdAsync(id.ToString());
             if (pEntity is not null)
             {
+                //auto mapper here
                 pEntity.UserName = participant.Name;
                 pEntity.Surname = participant.Surname;
                 pEntity.Email = participant.Email;
