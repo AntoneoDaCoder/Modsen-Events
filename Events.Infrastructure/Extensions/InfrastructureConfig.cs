@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Events.Infrastructure.DbContexts;
 using Events.Infrastructure.MappingProfiles;
 using Events.Infrastructure.DbEntities;
+using Events.Infrastructure.Repositories;
+using Events.Core.Abstractions;
 namespace Events.Infrastructure.Extensions
 {
     public static class InfrastructureConfig
@@ -12,6 +14,10 @@ namespace Events.Infrastructure.Extensions
         public static void ConfigureInfrastructure(this IServiceCollection services, string connectionString)
         {
             services.AddAutoMapper(cfg => { cfg.AddExpressionMapping(); }, typeof(InfrastructureMappingProfile));
+
+            services.AddScoped<IEventRepository, EventRepository>();
+            services.AddScoped<IParticipantRepository, ParticipantRepository>();
+            services.AddScoped<IEventParticipantRepository, EventParticipantRepository>();
 
             services.AddDbContext<EventsDbContext>
                (
