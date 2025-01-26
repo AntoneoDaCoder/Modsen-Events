@@ -18,6 +18,8 @@ namespace Events.Infrastructure.MappingProfiles
                 .ConstructUsing(p => Participant.CreateParticipant(Guid.Parse(p.Id), p.UserName!, p.Surname, p.BirthDate, p.Email!));
             CreateMap<Participant, ParticipantEntity>()
                 .ForMember(dest => dest.EventParticipants, opt => opt.Ignore())
+                .ForMember(dest => dest.RefreshToken, opt => opt.Ignore())
+                .ForMember(dest => dest.RefreshTokenExpiryTime, opt => opt.Ignore())
                  .ForMember(dest => dest.Id, opt => opt.Condition((src, dest, member) => member != string.Empty));
         }
     }
