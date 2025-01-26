@@ -1,4 +1,6 @@
-﻿using Events.Core.Abstractions;
+﻿using AutoMapper;
+using Events.Core.Abstractions;
+using Events.Core.Models;
 using Events.Infrastructure.DbContexts;
 using Events.Infrastructure.DbEntities;
 using Microsoft.AspNetCore.Identity;
@@ -10,10 +12,12 @@ namespace Events.Infrastructure.Repositories
     {
         private readonly EventsDbContext _dbContext;
         private readonly UserManager<ParticipantEntity> _participantManager;
-        public EventParticipantRepository(EventsDbContext dbContext, UserManager<ParticipantEntity> manager)
+        private readonly IMapper _mapper;
+        public EventParticipantRepository(EventsDbContext dbContext, UserManager<ParticipantEntity> manager, IMapper mapper)
         {
             _dbContext = dbContext;
             _participantManager = manager;
+            _mapper = mapper;
         }
         public async Task<(bool, IEnumerable<string>)> RegisterParticipantAsync(Guid eventId, Guid participantId)
         {
@@ -56,6 +60,48 @@ namespace Events.Infrastructure.Repositories
                 errors.Add(ex.Message);
                 return (false, errors);
             }
+        }
+        public async Task<(List<Participant>, IEnumerable<string>)> GetPagedParticipantsAsync(Guid eventId, int index, int pageSize)
+        {
+            var eventParticipants = await _dbContext.EventParticipants
+                .AsNoTracking()
+                .Where(ep => ep.EventId == eventId)
+                .Include(ep => ep.Participant)
+                .Skip((index - 1) * pageSize)
+                .Take(pageSize)
+                .Select(ep => ep.Participant)
+                .ToListAsync();
+            if (eventParticipants.Count == 0)
+                return (new List<Participant>(), new List<string> { "Event not found or has no participants." });
+            var participants = _mapper.Map<List<Participant>>(eventParticipants);
+            return (participants, Enumerable.Empty<string>());
+        }
+        public async Task<(bool, IEnumerable<string>)> UnregisterParticipantAsync(Guid eventId, Guid participantId)
+        {
+            var eventParticipantEntity = await _dbContext.EventParticipants.FirstOrDefaultAsync(ep => ep.EventId == eventId && ep.ParticipantId == participantId);
+            if (eventParticipantEntity is not null)
+            {
+                try
+                {
+                    _dbContext.EventParticipants.Remove(eventParticipantEntity);
+                    await _dbContext.SaveChangesAsync();
+                    return (true, Enumerable.Empty<string>());
+                }
+                catch (DbUpdateException ex)
+                {
+                    var errors = new List<string>() { ex.Message };
+                    if (ex.InnerException != null)
+                    {
+                        errors.Add(ex.InnerException.Message);
+                    }
+                    return (false, errors);
+                }
+                catch (Exception ex)
+                {
+                    return (false, new List<string>() { ex.Message });
+                }
+            }
+            return (false, new List<string>() { "Event participant not found." });
         }
     }
 }
