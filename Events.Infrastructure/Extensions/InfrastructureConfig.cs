@@ -11,7 +11,7 @@ namespace Events.Infrastructure.Extensions
 {
     public static class InfrastructureConfig
     {
-        public static void ConfigureInfrastructure(this IServiceCollection services, string connectionString)
+        public static void ConfigureInfrastructure(this IServiceCollection services, string dbConnectionString, string redisConnectionString)
         {
             services.AddAutoMapper(cfg => { cfg.AddExpressionMapping(); }, typeof(InfrastructureMappingProfile));
 
@@ -19,9 +19,18 @@ namespace Events.Infrastructure.Extensions
             services.AddScoped<IParticipantRepository, ParticipantRepository>();
             services.AddScoped<IEventParticipantRepository, EventParticipantRepository>();
 
+            services.AddStackExchangeRedisCache
+                (
+                options => 
+                {
+                    options.Configuration = redisConnectionString;
+                    options.InstanceName = "RedisCache_";
+                }
+                );
+
             services.AddDbContext<EventsDbContext>
                (
-               options => options.UseNpgsql(connectionString)
+               options => options.UseNpgsql(dbConnectionString)
                );
             services.AddIdentity<ParticipantEntity, IdentityRole>(options =>
             {
