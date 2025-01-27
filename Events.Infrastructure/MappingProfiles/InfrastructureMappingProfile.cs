@@ -15,10 +15,13 @@ namespace Events.Infrastructure.MappingProfiles
                 .ForMember(dest => dest.Id, opt => opt.Condition((src, dest, member) => member != Guid.Empty));
 
             CreateMap<ParticipantEntity, Participant>()
-                .ConstructUsing(p => Participant.CreateParticipant(Guid.Parse(p.Id), p.UserName!, p.Surname, p.BirthDate, p.Email!, p.RefreshToken, p.RefreshTokenExpiryTime));
+                .ConstructUsing(p => Participant.CreateParticipant(Guid.Parse(p.Id), p.Name, p.Surname, p.BirthDate, p.Email!, p.RefreshToken, p.RefreshTokenExpiryTime));
             CreateMap<Participant, ParticipantEntity>()
                 .ForMember(dest => dest.EventParticipants, opt => opt.Ignore())
-                .ForMember(dest => dest.Id, opt => opt.Condition((src, dest, member) => member != string.Empty));
+                .ForMember(dest => dest.Id, opt => opt.Condition((src, dest, member) => member != string.Empty))
+                .ForMember(dest => dest.UserName, opt =>
+                    opt.Condition((src, dest) => string.IsNullOrWhiteSpace(dest.UserName)))
+                   .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => Guid.NewGuid().ToString()));
         }
     }
 }

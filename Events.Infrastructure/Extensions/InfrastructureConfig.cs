@@ -11,24 +11,8 @@ namespace Events.Infrastructure.Extensions
 {
     public static class InfrastructureConfig
     {
-        public static void ConfigureInfrastructure(this IServiceCollection services, string dbConnectionString, string redisConnectionString)
+        public static void ConfigureDbContext(this IServiceCollection services, string dbConnectionString)
         {
-            services.AddAutoMapper(cfg => { cfg.AddExpressionMapping(); }, typeof(InfrastructureMappingProfile));
-
-            services.AddScoped<IEventRepository, EventRepository>();
-            services.AddScoped<IParticipantRepository, ParticipantRepository>();
-            services.AddScoped<IEventParticipantRepository, EventParticipantRepository>();
-            services.AddScoped<IImageRepository, ImageRepository>();
-
-            services.AddStackExchangeRedisCache
-                (
-                options => 
-                {
-                    options.Configuration = redisConnectionString;
-                    options.InstanceName = "RedisCache_";
-                }
-                );
-
             services.AddDbContext<EventsDbContext>
                (
                options => options.UseNpgsql(dbConnectionString)
@@ -43,5 +27,29 @@ namespace Events.Infrastructure.Extensions
             .AddEntityFrameworkStores<EventsDbContext>()
             .AddDefaultTokenProviders();
         }
+        public static void ConfigureMapping(this IServiceCollection services)
+        {
+            services.AddAutoMapper(cfg => { cfg.AddExpressionMapping(); }, typeof(InfrastructureMappingProfile));
+        }
+        public static void ConfigureAuthRepositories(this IServiceCollection services)
+        {
+            services.AddScoped<IParticipantRepository, ParticipantRepository>();
+        }
+        //public static void ConfigureInfrastructure(this IServiceCollection services, string redisConnectionString)
+        //{
+        //    services.AddScoped<IEventRepository, EventRepository>();
+        //    services.AddScoped<IParticipantRepository, ParticipantRepository>();
+        //    services.AddScoped<IEventParticipantRepository, EventParticipantRepository>();
+        //    services.AddScoped<IImageRepository, ImageRepository>();
+
+        //    services.AddStackExchangeRedisCache
+        //        (
+        //        options => 
+        //        {
+        //            options.Configuration = redisConnectionString;
+        //            options.InstanceName = "RedisCache_";
+        //        }
+        //        );  
+        //}
     }
 }

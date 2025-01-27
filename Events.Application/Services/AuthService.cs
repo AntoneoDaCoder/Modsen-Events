@@ -8,7 +8,6 @@ using System.IdentityModel.Tokens.Jwt;
 using FluentValidation;
 using Events.Application.Exceptions;
 using System.Text;
-using System.Xml.XPath;
 namespace Events.Application.Services
 {
     public class AuthService : IAuthService
@@ -22,7 +21,7 @@ namespace Events.Application.Services
             _configuration = conf;
             _validator = validator;
         }
-        private string GenerateRefreshToken()
+        private static string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
             using (var rng = RandomNumberGenerator.Create())
@@ -31,7 +30,7 @@ namespace Events.Application.Services
                 return Convert.ToBase64String(randomNumber);
             }
         }
-        private List<Claim> GetClaims(Participant p)
+        private static List<Claim> GetClaims(Participant p)
         {
             return new List<Claim> { new Claim(ClaimTypes.UserData, p.Id.ToString()), new Claim(ClaimTypes.DateOfBirth, p.BirthDate.ToString()) };
         }
@@ -116,10 +115,9 @@ namespace Events.Application.Services
             var (newAccessToken, refreshToken) = await CreateToken(p, refresh: false);
             return (newAccessToken, p.RefreshToken);
         }
-        public async Task<(bool, Participant?)> ValidateParticipantAsync(Participant p, string password)
+        public async Task<(bool, Participant?)> ValidateParticipantAsync(string email, string password)
         {
-            var participant = await _participantRepository.GetByEmailAsync(p.Email);
-            return (await _participantRepository.CheckPasswordAsync(p, password), participant);
+            return await _participantRepository.CheckPasswordAsync(email, password);
         }
         public async Task<(bool, IEnumerable<string>)> RegisterParticipantAsync(Participant p, string password)
         {

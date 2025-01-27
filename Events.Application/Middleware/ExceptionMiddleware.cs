@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Events.Application.Exceptions;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Http.Json;
+using System.Text.Json;
 namespace Events.Application.Middleware
 {
     public class ExceptionMiddleware
@@ -30,7 +33,7 @@ namespace Events.Application.Middleware
                     details = errorMessages
                 };
 
-                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(errorResponse));
+                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(errorResponse,Formatting.Indented));
             }
             catch (Exception ex)
             {
@@ -43,7 +46,7 @@ namespace Events.Application.Middleware
                     details = ex.Message
                 };
 
-                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(errorResponse));
+                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(errorResponse, Formatting.Indented));
             }
         }
 
@@ -55,7 +58,7 @@ namespace Events.Application.Middleware
                 messages.Add(ex.Message);
                 ex = ex.InnerException;
             }
-            return string.Join("; ", messages);
+            return string.Join("\n", messages);
         }
     }
 }

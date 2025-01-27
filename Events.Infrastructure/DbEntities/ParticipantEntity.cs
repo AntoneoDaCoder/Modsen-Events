@@ -3,6 +3,7 @@ namespace Events.Infrastructure.DbEntities
 {
     public class ParticipantEntity : IdentityUser
     {
+        public string Name { get; set; } = string.Empty;
         public string Surname { get; set; } = string.Empty;
         public DateOnly BirthDate { get; set; } = DateOnly.MinValue;
         public string RefreshToken { get; set; } = string.Empty;

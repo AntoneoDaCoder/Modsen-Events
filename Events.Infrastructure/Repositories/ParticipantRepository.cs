@@ -4,6 +4,7 @@ using Events.Infrastructure.DbEntities;
 using Events.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
+using System.Text.Json;
 namespace Events.Infrastructure.Repositories
 {
     public class ParticipantRepository : IParticipantRepository
@@ -22,9 +23,10 @@ namespace Events.Infrastructure.Repositories
                 return _mapper.Map<Participant>(pEntity);
             return null;
         }
-        public async Task<bool> CheckPasswordAsync(Participant p, string password)
+        public async Task<(bool, Participant?)> CheckPasswordAsync(string email, string password)
         {
-            return await _participantsManager.CheckPasswordAsync(_mapper.Map<ParticipantEntity>(p), password);
+            var actualEntity = await _participantsManager.FindByEmailAsync(email);
+            return (await _participantsManager.CheckPasswordAsync(actualEntity, password), _mapper.Map<Participant>(actualEntity));
         }
         public async Task<Participant?> GetByEmailAsync(string email)
         {
@@ -48,7 +50,7 @@ namespace Events.Infrastructure.Repositories
         {
             var pEntity = await _participantsManager.FindByIdAsync(participant.Id.ToString());
             if (pEntity is not null)
-                pEntity = _mapper.Map<ParticipantEntity>(participant);
+                _mapper.Map(participant, pEntity);
             var result = await _participantsManager.UpdateAsync(pEntity!);
             return (result.Succeeded, result.Errors.Select(e => e.Description));
         }

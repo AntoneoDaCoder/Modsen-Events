@@ -5,7 +5,7 @@ namespace Events.Core.Abstractions
     {
         Task<(string, string)> CreateToken(Participant p, bool refresh);
         Task<(string, string)> UpdateToken(string access, string refresh);
-        Task<(bool, Participant?)> ValidateParticipantAsync(Participant p, string password);
+        Task<(bool, Participant?)> ValidateParticipantAsync(string email, string password);
         Task<(bool, IEnumerable<string>)> RegisterParticipantAsync(Participant p, string password);
     }
 }

@@ -19,7 +19,7 @@ namespace Events.Infrastructure.Repositories
             _participantManager = manager;
             _mapper = mapper;
         }
-        public async Task<(bool, IEnumerable<string>)> RegisterParticipantAsync(Guid eventId, Guid participantId)
+        public async Task<(bool, IEnumerable<string>)> RegisterParticipantAsync(Guid eventId, string participantId)
         {
             var errors = new List<string>();
             var eEntity = await _dbContext.Events.FirstOrDefaultAsync(e => e.Id == eventId);
@@ -76,7 +76,7 @@ namespace Events.Infrastructure.Repositories
             var participants = _mapper.Map<List<Participant>>(eventParticipants);
             return (participants, Enumerable.Empty<string>());
         }
-        public async Task<(bool, IEnumerable<string>)> UnregisterParticipantAsync(Guid eventId, Guid participantId)
+        public async Task<(bool, IEnumerable<string>)> UnregisterParticipantAsync(Guid eventId, string participantId)
         {
             var eventParticipantEntity = await _dbContext.EventParticipants.FirstOrDefaultAsync(ep => ep.EventId == eventId && ep.ParticipantId == participantId);
             if (eventParticipantEntity is not null)

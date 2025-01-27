@@ -10,6 +10,8 @@ namespace Events.Infrastructure.Configurations
             builder.HasKey(p => p.Id);
             builder.Property(p => p.Surname).IsRequired();
             builder.Property(p => p.BirthDate).IsRequired();
+            builder.Property(p => p.RefreshTokenExpiryTime)
+                .HasConversion(v => v.ToUniversalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
         }
     }
 }
