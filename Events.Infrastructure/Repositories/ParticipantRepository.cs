@@ -17,7 +17,14 @@ namespace Events.Infrastructure.Repositories
         }
         public async Task<Participant?> GetByIdAsync(Guid id)
         {
-            var pEntity = await _participantsManager.FindByIdAsync(id.ToString()!);
+            var pEntity = await _participantsManager.FindByIdAsync(id.ToString());
+            if (pEntity is not null)
+                return _mapper.Map<Participant>(pEntity);
+            return null;
+        }
+        public async Task<Participant?> GetByEmailAsync(string email)
+        {
+            var pEntity = await _participantsManager.FindByEmailAsync(email);
             if (pEntity is not null)
                 return _mapper.Map<Participant>(pEntity);
             return null;
