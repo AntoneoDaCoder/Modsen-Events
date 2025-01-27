@@ -19,9 +19,21 @@
             RefreshTokenExpiryTime = expirationTime;
             RefreshToken = refreshToken;
         }
+        private Participant(Guid id, string name, string surname, DateOnly birthDate, string email)
+        {
+            Id = id;
+            Name = name;
+            Surname = surname;
+            BirthDate = birthDate;
+            Email = email;
+        }
         static public Participant CreateParticipant(Guid id, string name, string surname, DateOnly birthDate, string email, string refreshToken, DateTime expirationTime)
         {
             return new Participant(id, name, surname, birthDate, email, refreshToken, expirationTime);
+        }
+        static public Participant CreateParticipant(Guid id, string name, string surname, DateOnly birthDate, string email)
+        {
+            return new Participant(id, name, surname, birthDate, email);
         }
 
     }
