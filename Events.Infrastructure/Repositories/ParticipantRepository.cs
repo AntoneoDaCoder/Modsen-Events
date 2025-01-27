@@ -22,6 +22,10 @@ namespace Events.Infrastructure.Repositories
                 return _mapper.Map<Participant>(pEntity);
             return null;
         }
+        public async Task<bool> CheckPasswordAsync(Participant p, string password)
+        {
+            return await _participantsManager.CheckPasswordAsync(_mapper.Map<ParticipantEntity>(p), password);
+        }
         public async Task<Participant?> GetByEmailAsync(string email)
         {
             var pEntity = await _participantsManager.FindByEmailAsync(email);
