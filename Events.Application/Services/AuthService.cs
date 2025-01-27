@@ -8,8 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using FluentValidation;
 using Events.Application.Exceptions;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.ComponentModel;
+using System.Xml.XPath;
 namespace Events.Application.Services
 {
     public class AuthService : IAuthService
@@ -17,10 +16,11 @@ namespace Events.Application.Services
         private readonly IParticipantRepository _participantRepository;
         private readonly IConfiguration _configuration;
         private readonly IValidator<Participant> _validator;
-        public AuthService(IParticipantRepository participantRepository, IConfiguration conf)
+        public AuthService(IParticipantRepository participantRepository, IConfiguration conf, IValidator<Participant> validator)
         {
             _participantRepository = participantRepository;
             _configuration = conf;
+            _validator = validator;
         }
         private string GenerateRefreshToken()
         {
@@ -33,7 +33,41 @@ namespace Events.Application.Services
         }
         private List<Claim> GetClaims(Participant p)
         {
-            return new List<Claim> { new Claim(ClaimTypes.Email, p.Email), new Claim(ClaimTypes.DateOfBirth, p.BirthDate.ToString()) };
+            return new List<Claim> { new Claim(ClaimTypes.UserData, p.Id.ToString()), new Claim(ClaimTypes.DateOfBirth, p.BirthDate.ToString()) };
+        }
+        private static SigningCredentials GetSigningCredentials()
+        {
+            var key = Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")!);
+            var secret = new SymmetricSecurityKey(key);
+            return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
+        }
+        private ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        {
+            var jwtSettings = _configuration.GetSection("JwtSettings");
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = true,
+                ValidateIssuer = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")!)),
+                ValidateLifetime = true,
+                ValidIssuer = jwtSettings["validIssuer"],
+                ValidAudience = jwtSettings["validAudience"]
+            };
+            var tokenHandler = new JwtSecurityTokenHandler();
+            SecurityToken securityToken;
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out
+        securityToken);
+
+            var jwtSecurityToken = securityToken as JwtSecurityToken;
+            if (jwtSecurityToken == null ||
+        !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new SecurityTokenException("Invalid token");
+            }
+            return principal;
         }
         private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
         {
@@ -46,13 +80,46 @@ namespace Events.Application.Services
                 signingCredentials: signingCredentials
             );
         }
-        public Task<(string, string)> CreateToken(bool populate)
+        public async Task<(string, string)> CreateToken(Participant p, bool refresh)
         {
-
+            var signingCredentials = GetSigningCredentials();
+            var claims = GetClaims(p);
+            var tokenOptions = GenerateTokenOptions(signingCredentials, claims);
+            var refreshToken = string.Empty;
+            if (refresh)
+            {
+                refreshToken = GenerateRefreshToken();
+                var expirationTime = DateTime.Now.AddDays(7);
+                p.SetRefreshToken(refreshToken, expirationTime);
+                var (success, errors) = await _participantRepository.UpdateAsync(p);
+                if (!success)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    foreach (var error in errors)
+                        sb.Append(error + ", ");
+                    sb.Remove(sb.Length - 1, 1);
+                    throw new ServiceException("Auth service failed to update refresh token: " + sb.ToString());
+                }
+            }
+            return (new JwtSecurityTokenHandler().WriteToken(tokenOptions), refreshToken);
         }
-        public async Task<(bool, Participant)> ValidateParticipantAsync(Participant p, string password)
+        public async Task<(string, string)> RefreshToken(string access, string refresh)
         {
+            var principal = GetPrincipalFromExpiredToken(access);
+            var p = await _participantRepository.GetByIdAsync(Guid.Parse(principal.Claims.First(x => x.Type == ClaimTypes.UserData).Value));
+            if (p is null)
+                throw new ServiceException("Auth service failed to refresh access token: participant not found.");
 
+            if (p.RefreshToken != refresh || p.RefreshTokenExpiryTime <= DateTime.Now)
+                throw new ServiceException("Auth service failed to refresh token: invalid tokens.");
+
+            var (newAccessToken, refreshToken) = await CreateToken(p, refresh: false);
+            return (newAccessToken, p.RefreshToken);
+        }
+        public async Task<(bool, Participant?)> ValidateParticipantAsync(Participant p, string password)
+        {
+            var participant = await _participantRepository.GetByEmailAsync(p.Email);
+            return (await _participantRepository.CheckPasswordAsync(p, password), participant);
         }
         public async Task<(bool, IEnumerable<string>)> RegisterParticipantAsync(Participant p, string password)
         {
