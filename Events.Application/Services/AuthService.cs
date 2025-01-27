@@ -103,7 +103,7 @@ namespace Events.Application.Services
             }
             return (new JwtSecurityTokenHandler().WriteToken(tokenOptions), refreshToken);
         }
-        public async Task<(string, string)> RefreshToken(string access, string refresh)
+        public async Task<(string, string)> UpdateToken(string access, string refresh)
         {
             var principal = GetPrincipalFromExpiredToken(access);
             var p = await _participantRepository.GetByIdAsync(Guid.Parse(principal.Claims.First(x => x.Type == ClaimTypes.UserData).Value));
