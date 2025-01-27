@@ -44,9 +44,9 @@ namespace Events.Infrastructure.Repositories
             var result = await _participantsManager.CreateAsync(participantEntity, password);
             return (result.Succeeded, result.Errors.Select(e => e.Description));
         }
-        public async Task<(bool, IEnumerable<string>)> UpdateAsync(Guid id, Participant participant)
+        public async Task<(bool, IEnumerable<string>)> UpdateAsync(Participant participant)
         {
-            var pEntity = await _participantsManager.FindByIdAsync(id.ToString());
+            var pEntity = await _participantsManager.FindByIdAsync(participant.Id.ToString());
             if (pEntity is not null)
                 pEntity = _mapper.Map<ParticipantEntity>(participant);
             var result = await _participantsManager.UpdateAsync(pEntity!);
