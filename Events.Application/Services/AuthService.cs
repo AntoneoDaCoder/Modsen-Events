@@ -92,13 +92,7 @@ namespace Events.Application.Services
                 p.SetRefreshToken(refreshToken, expirationTime);
                 var (success, errors) = await _participantRepository.UpdateAsync(p);
                 if (!success)
-                {
-                    StringBuilder sb = new StringBuilder();
-                    foreach (var error in errors)
-                        sb.Append(error + ", ");
-                    sb.Remove(sb.Length - 1, 1);
-                    throw new ServiceException("Auth service failed to update refresh token: " + sb.ToString());
-                }
+                    throw EventsException.RaiseException<ServiceException>("Auth service failed to update participant's refresh token [internal error]", errors);
             }
             return (new JwtSecurityTokenHandler().WriteToken(tokenOptions), refreshToken);
         }
@@ -107,10 +101,10 @@ namespace Events.Application.Services
             var principal = GetPrincipalFromExpiredToken(access);
             var p = await _participantRepository.GetByIdAsync(Guid.Parse(principal.Claims.First(x => x.Type == ClaimTypes.UserData).Value));
             if (p is null)
-                throw new ServiceException("Auth service failed to refresh access token: participant not found.");
+                throw EventsException.RaiseException<ServiceException>("Auth service failed to refresh token [internal error]", ["participant doesn't exist"]);
 
             if (p.RefreshToken != refresh || p.RefreshTokenExpiryTime <= DateTime.Now)
-                throw new ServiceException("Auth service failed to refresh token: invalid tokens.");
+                throw EventsException.RaiseException<ServiceException>("Auth service failed to refresh token [internal error]", ["invalid tokens"]);
 
             var (newAccessToken, refreshToken) = await CreateToken(p, refresh: false);
             return (newAccessToken, p.RefreshToken);
@@ -119,27 +113,16 @@ namespace Events.Application.Services
         {
             return await _participantRepository.CheckPasswordAsync(email, password);
         }
-        public async Task<(bool, IEnumerable<string>)> RegisterParticipantAsync(Participant p, string password)
+        public async Task RegisterParticipantAsync(Participant p, string password)
         {
             var validationResult = await _validator.ValidateAsync(p);
             if (validationResult.IsValid)
             {
                 var (success, errors) = await _participantRepository.CreateAsync(p, password);
-                if (success)
-                    return (success, Enumerable.Empty<string>());
-                StringBuilder sb = new StringBuilder();
-                foreach (var error in errors)
-                    sb.Append(error + ", ");
-                sb.Remove(sb.Length - 1, 1);
-                throw new ServiceException("Auth service failed to add new participant: " + sb.ToString());
+                if (!success)
+                    throw EventsException.RaiseException<ServiceException>("Auth service failed to add participant [internal error]", errors);
             }
-            else
-            {
-                var errors = new List<string>();
-                foreach (var error in validationResult.Errors)
-                    errors.Add(error.PropertyName + ": " + error.ErrorMessage);
-                return (false, errors);
-            }
+            throw EventsException.RaiseException<IncorrectDataException>("Auth service failed to add participant [incorrect data]", validationResult.Errors.Select(e => e.ErrorMessage));
         }
     }
 }
