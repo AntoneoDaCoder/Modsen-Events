@@ -15,13 +15,15 @@ namespace Events.AuthenticationService.Controllers
         private readonly IAuthService _authService;
         private readonly IValidator<LoginParticipantDTO> _loginValidator;
         private readonly IValidator<RegisterParticipantDTO> _registerValidator;
+        private readonly IValidator<RefreshTokenDTO> _refreshValidator;
         private readonly IMapper _mapper;
         public AuthController(IAuthService authService, IValidator<LoginParticipantDTO> loginValidator,
-            IValidator<RegisterParticipantDTO> registerValidator, IMapper mapper)
+            IValidator<RegisterParticipantDTO> registerValidator, IValidator<RefreshTokenDTO> refreshValidator, IMapper mapper)
         {
             _authService = authService;
             _loginValidator = loginValidator;
             _registerValidator = registerValidator;
+            _refreshValidator = refreshValidator;
             _mapper = mapper;
         }
 
@@ -46,11 +48,15 @@ namespace Events.AuthenticationService.Controllers
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshTokensAsync([FromBody] RefreshTokenDTO refreshDto)
         {
-            //if (!await _authService.ValidateUserAsync(loginDto))
-            //    return Unauthorized();
-
-            //return Ok(new { Token = _authService.GetUserToken() });
-            return Ok();
+            var validationResult = _refreshValidator.Validate(refreshDto);
+            if (validationResult.IsValid)
+            {
+                (string access, string refresh) = await _authService.UpdateToken(refreshDto.AccessToken, refreshDto.RefreshToken);
+                return Ok(new { access, refresh });
+            }
+            foreach (var error in validationResult.Errors)
+                ModelState.TryAddModelError(error.PropertyName, error.ErrorMessage);
+            return BadRequest(ModelState);
         }
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUserAsync([FromBody] RegisterParticipantDTO registerDto)

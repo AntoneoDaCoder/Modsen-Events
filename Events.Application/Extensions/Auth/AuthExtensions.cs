@@ -21,6 +21,7 @@ namespace Events.Application.Extensions.Auth
             services.AddScoped<IValidator<LoginParticipantDTO>, LoginDTOValidator>();
             services.AddScoped<IValidator<RegisterParticipantDTO>, RegisterDTOValidator>();
             services.AddScoped<IValidator<Participant>, ParticipantValidator>();
+            services.AddScoped<IValidator<RefreshTokenDTO>, RefreshDTOValidator>();
             services.AddScoped<IAuthService, AuthService>();
             services.ConfigureMapping();
             services.ConfigureAuthRepositories();
@@ -29,7 +30,7 @@ namespace Events.Application.Extensions.Auth
         }
         public static void ConfigureMiddleware(this IApplicationBuilder app)
         {
-           // app.UseMiddleware<ExceptionMiddleware>();
+            app.UseMiddleware<ExceptionMiddleware>();
         }
         public static void ConfigureDbContext(this IServiceCollection services)
         {
