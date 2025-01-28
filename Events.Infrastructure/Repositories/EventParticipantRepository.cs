@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Events.Core.Abstractions;
+using Events.Core.Contracts;
 using Events.Core.Models;
 using Events.Infrastructure.DbContexts;
 using Events.Infrastructure.DbEntities;
@@ -22,16 +23,19 @@ namespace Events.Infrastructure.Repositories
         public async Task<(bool, IEnumerable<string>)> RegisterParticipantAsync(Guid eventId, string participantId)
         {
             var errors = new List<string>();
-            var eEntity = await _dbContext.Events.FirstOrDefaultAsync(e => e.Id == eventId);
+            var eEntity = await _dbContext.Events.AsNoTracking().Include(e => e.EventParticipants).FirstOrDefaultAsync(e => e.Id == eventId);
             var pEntity = await _participantManager.FindByIdAsync(participantId.ToString());
 
             if (eEntity is null)
                 errors.Add("Event not found.");
             if (pEntity is null)
                 errors.Add("Participant not found.");
+            if (eEntity!.EventParticipants.Count + 1 > eEntity.MaxParticipants)
+                errors.Add("Event has no vacant slots.");
 
             if (errors.Count != 0)
                 return (false, errors);
+
 
             var eventParticipantEntity = new EventParticipantEntity()
             {
@@ -61,7 +65,7 @@ namespace Events.Infrastructure.Repositories
                 return (false, errors);
             }
         }
-        public async Task<(List<Participant>, IEnumerable<string>)> GetPagedParticipantsAsync(Guid eventId, int index, int pageSize)
+        public async Task<List<ParticipantWithDateDTO>> GetPagedParticipantsAsync(Guid eventId, int index, int pageSize)
         {
             var eventParticipants = await _dbContext.EventParticipants
                 .AsNoTracking()
@@ -69,12 +73,19 @@ namespace Events.Infrastructure.Repositories
                 .Include(ep => ep.Participant)
                 .Skip((index - 1) * pageSize)
                 .Take(pageSize)
-                .Select(ep => ep.Participant)
                 .ToListAsync();
             if (eventParticipants.Count == 0)
-                return (new List<Participant>(), new List<string> { "Event not found or has no participants." });
-            var participants = _mapper.Map<List<Participant>>(eventParticipants);
-            return (participants, Enumerable.Empty<string>());
+                return [];
+            var participants = _mapper.Map<List<ParticipantWithDateDTO>>(eventParticipants);
+            return participants;
+        }
+        public async Task<ParticipantWithDateDTO?> GetEventParticipantByIdAsync(Guid eventId, string participantId)
+        {
+            var eventParticipant = await _dbContext.EventParticipants
+                .AsNoTracking()
+                .Include(ep => ep.Participant)
+                .FirstOrDefaultAsync(ep => ep.EventId == eventId && ep.ParticipantId == participantId);
+            return _mapper.Map<ParticipantWithDateDTO>(eventParticipant);
         }
         public async Task<(bool, IEnumerable<string>)> UnregisterParticipantAsync(Guid eventId, string participantId)
         {
