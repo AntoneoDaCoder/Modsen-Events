@@ -37,7 +37,7 @@ namespace Events.AuthenticationService.Controllers
                 if (success)
                 {
                     (string access, string refresh) = await _authService.CreateToken(res!, refresh: true);
-                    return StatusCode(201, new { access, refresh });
+                    return StatusCode(200, new { access, refresh });
                 }
                 return BadRequest("Participant doesn't exist or password is incorrect.");
             }
