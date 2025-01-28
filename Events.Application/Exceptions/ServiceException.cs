@@ -1,9 +1,10 @@
-﻿namespace Events.Application.Exceptions
+﻿using System.Text;
+
+namespace Events.Application.Exceptions
 {
-    public class ServiceException:Exception
+    public class ServiceException : EventsException
     {
-        public ServiceException(string message, Exception innerException = null!)
-        : base(message, innerException)
+        public ServiceException(string message, Exception? inner = null) : base(message, inner)
         {
         }
     }
