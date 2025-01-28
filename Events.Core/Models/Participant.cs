@@ -1,13 +1,17 @@
-﻿namespace Events.Core.Models
+﻿using System.Text.Json.Serialization;
+
+namespace Events.Core.Models
 {
     public class Participant
     {
-        public Guid Id { get; } = Guid.Empty;
+        public Guid Id { get; }
         public string Name { get; } = string.Empty;
         public string Surname { get; } = string.Empty;
         public DateOnly BirthDate { get; } = DateOnly.MinValue;
         public string Email { get; } = string.Empty;
+        [JsonIgnore]
         public string RefreshToken { get; private set; } = string.Empty;
+        [JsonIgnore]
         public DateTime RefreshTokenExpiryTime { get; private set; } = DateTime.MinValue;
         private Participant(Guid id, string name, string surname, DateOnly birthDate, string email, string refreshToken, DateTime expirationTime)
         {
@@ -40,6 +44,5 @@
             RefreshToken = token;
             RefreshTokenExpiryTime = expirationTime;
         }
-
     }
 }
