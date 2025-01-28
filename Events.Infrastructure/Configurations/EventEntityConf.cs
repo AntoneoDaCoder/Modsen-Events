@@ -8,6 +8,7 @@ namespace Events.Infrastructure.Configurations
         public void Configure(EntityTypeBuilder<EventEntity> builder)
         {
             builder.HasKey(ev => ev.Id);
+            builder.HasIndex(ev => ev.Name).IsUnique();
             builder.Property(ev => ev.Name).IsRequired();
             builder.Property(ev => ev.Description).IsRequired();
             builder.Property(ev => ev.Date).IsRequired();

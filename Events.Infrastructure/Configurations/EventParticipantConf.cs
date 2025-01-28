@@ -11,12 +11,12 @@ namespace Events.Infrastructure.Configurations
             builder
                 .HasOne(p => p.Participant)
                 .WithMany(ep => ep.EventParticipants)
-                .HasForeignKey(ep => ep.ParticipantId);
+                .HasForeignKey(ep => ep.ParticipantId).OnDelete(DeleteBehavior.Cascade);
 
             builder
                .HasOne(e => e.Event)
                .WithMany(ep => ep.EventParticipants)
-               .HasForeignKey(ep => ep.EventId);
+               .HasForeignKey(ep => ep.EventId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
