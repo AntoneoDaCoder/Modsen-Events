@@ -65,13 +65,8 @@ namespace Events.AuthenticationService.Controllers
             if (validationResult.IsValid)
             {
                 var p = _mapper.Map<Participant>(registerDto);
-                (bool success, IEnumerable<string> errors) = await _authService.RegisterParticipantAsync(p, registerDto.Password);
-                if (success)
-                    return StatusCode(201);
-                StringBuilder sb = new StringBuilder();
-                foreach (var error in errors)
-                    sb.Append(error + "\n");
-                return BadRequest(errors);
+                await _authService.RegisterParticipantAsync(p, registerDto.Password);
+                return StatusCode(201);
             }
             foreach (var error in validationResult.Errors)
                 ModelState.TryAddModelError(error.PropertyName, error.ErrorMessage);
