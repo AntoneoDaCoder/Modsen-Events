@@ -1,4 +1,3 @@
-version:  "3.9"
 services:
   api-gateway:
     container_name: main-api
@@ -11,8 +10,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://*:8080
       - JWT_SECRET=events_super_puper_mega_secret_key
-    # depends_on:
-    #   - api-auth-service
+    depends_on:
+     - api-auth-service
     #   - api-request-service
     networks:
       - events-network

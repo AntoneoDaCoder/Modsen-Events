@@ -59,6 +59,9 @@ namespace Events.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.HasIndex("Date", "Location", "Category");
 
                     b.ToTable("Events");
