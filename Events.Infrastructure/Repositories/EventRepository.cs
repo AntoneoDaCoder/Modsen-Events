@@ -64,7 +64,7 @@ namespace Events.Infrastructure.Repositories
             var eEntity = await _dbContext.Events.FirstOrDefaultAsync(e => e.Id == id);
             if (eEntity is not null)
             {
-                eEntity = _mapper.Map<EventEntity>(ev);
+                _mapper.Map(ev, eEntity);
                 try
                 {
                     int res = await _dbContext.SaveChangesAsync();
@@ -113,17 +113,13 @@ namespace Events.Infrastructure.Repositories
             }
             return (false, new List<string> { "Event not found" });
         }
-        public async Task<(List<Event>, IEnumerable<string>)> GetByCriterionAsync(Expression<Func<Event, bool>>? filter)
+        public async Task<List<Event>> GetByCriterionAsync(Expression<Func<Event, bool>> filter, int index, int pageSize)
         {
-            if (filter is not null)
-            {
-                IQueryable<EventEntity> query = _dbContext.Events;
-                var entityFilter = _mapper.MapExpression<Expression<Func<EventEntity, bool>>>(filter);
-                query = query.Where(entityFilter);
-                var eventEntities = await query.AsNoTracking().ToListAsync();
-                return (_mapper.Map<List<Event>>(eventEntities), Enumerable.Empty<string>());
-            }
-            return (new List<Event>(), new List<string> { "No criteria were specified." });
+            IQueryable<EventEntity> query = _dbContext.Events;
+            var entityFilter = _mapper.MapExpression<Expression<Func<EventEntity, bool>>>(filter);
+            query = query.Where(entityFilter);
+            var eventEntities = await query.AsNoTracking().Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
+            return _mapper.Map<List<Event>>(eventEntities);
         }
     }
 }
