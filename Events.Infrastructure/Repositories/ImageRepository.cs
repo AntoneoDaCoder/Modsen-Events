@@ -27,7 +27,7 @@ namespace Events.Infrastructure.Repositories
                 }
                 var options = new DistributedCacheEntryOptions
                 {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
                 };
                 await _imageCache.SetAsync(fileName, File.ReadAllBytes(filePath), options);
                 return (Path.Combine(rootDir, fileName), Enumerable.Empty<string>());

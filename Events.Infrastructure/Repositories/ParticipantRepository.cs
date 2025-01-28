@@ -4,7 +4,6 @@ using Events.Infrastructure.DbEntities;
 using Events.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
-using System.Text.Json;
 namespace Events.Infrastructure.Repositories
 {
     public class ParticipantRepository : IParticipantRepository
