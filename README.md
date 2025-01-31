@@ -20,7 +20,7 @@ In my case Docker allowed nginx to start up on port 443 and requests couldn't re
 
 
 
---------------------------------------------------
+
 Valid request examples and server answers for each service are listed below
 
 
@@ -36,7 +36,8 @@ Register:
 Refresh:
 ![screenshot](Examples/Auth service/refresh.png)
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------------------
+
 Data service
 
 Create event:
@@ -76,7 +77,4 @@ Get event participants (paged):
 
 Delete event:
 ![screenshot](Examples/Data service/delete-event.png)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
---------------------------------------------------
