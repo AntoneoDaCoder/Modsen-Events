@@ -23,6 +23,7 @@ public class EventParticipantServiceTests
             It.IsAny<IEventRepository>(),
             _pageValidatorMock.Object,
             It.IsAny<IValidator<Event>>(),
+            It.IsAny<IParticipantRepository>(),
             It.IsAny<IImageRepository>()
             );
     }
