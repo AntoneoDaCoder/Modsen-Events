@@ -50,12 +50,14 @@ namespace Events.Application.Services
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")!)),
-                ValidateLifetime = true,
+                ValidateLifetime = false,
                 ValidIssuer = jwtSettings["validIssuer"],
                 ValidAudience = jwtSettings["validAudience"]
             };
             var tokenHandler = new JwtSecurityTokenHandler();
             SecurityToken securityToken;
+
+
             var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out
         securityToken);
 
@@ -67,6 +69,8 @@ namespace Events.Application.Services
                 throw new SecurityTokenException("Invalid token");
             }
             return principal;
+
+
         }
         private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
         {
@@ -90,8 +94,8 @@ namespace Events.Application.Services
                 refreshToken = GenerateRefreshToken();
                 var expirationTime = DateTime.Now.AddDays(7);
                 p.SetRefreshToken(refreshToken, expirationTime);
-                var (success, errors) = await _participantRepository.UpdateAsync(p);
-                if (!success)
+                var (res, errors) = await _participantRepository.UpdateAsync(p);
+                if (!res && errors.Any())
                     throw EventsException.RaiseException<ServiceException>("Auth service failed to update participant's refresh token [internal error]", errors);
             }
             return (new JwtSecurityTokenHandler().WriteToken(tokenOptions), refreshToken);
@@ -118,11 +122,12 @@ namespace Events.Application.Services
             var validationResult = await _validator.ValidateAsync(p);
             if (validationResult.IsValid)
             {
-                var (success, errors) = await _participantRepository.CreateAsync(p, password);
-                if (!success)
+                var (res, errors) = await _participantRepository.CreateAsync(p, password);
+                if (!res && errors.Any())
                     throw EventsException.RaiseException<ServiceException>("Auth service failed to add participant [internal error]", errors);
             }
-            throw EventsException.RaiseException<IncorrectDataException>("Auth service failed to add participant [incorrect data]", validationResult.Errors.Select(e => e.ErrorMessage));
+            else
+                throw EventsException.RaiseException<IncorrectDataException>("Auth service failed to add participant [incorrect data]", validationResult.Errors.Select(e => e.ErrorMessage));
         }
     }
 }
