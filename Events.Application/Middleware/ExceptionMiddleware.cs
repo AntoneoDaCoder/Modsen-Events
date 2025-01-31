@@ -27,10 +27,11 @@ namespace Events.Application.Middleware
                 var errorResponse = new
                 {
                     message = "Internal server error.",
-                    details = errorMessages
+                    details = errorMessages,
+                    occuredAt = ex.StackTrace
                 };
 
-                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(errorResponse));
+                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(errorResponse, Formatting.Indented));
             }
             catch (IncorrectDataException ex)
             {
@@ -42,28 +43,30 @@ namespace Events.Application.Middleware
                 var errorResponse = new
                 {
                     message = "Bad request.",
-                    details = errorMessages
+                    details = errorMessages,
+                    occuredAt = ex.StackTrace
                 };
 
-                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(errorResponse));
+                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(errorResponse, Formatting.Indented));
             }
             catch (Exception ex)
             {
                 httpContext.Response.ContentType = "application/json";
                 httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-                var errorMessages = GetErrorMessages(ex);
+
                 var errorResponse = new
                 {
                     message = "An internal error occurred.",
-                    details = errorMessages
+                    details = GetErrorMessages(ex),
+                    occuredAt = ex.StackTrace
                 };
 
                 await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(errorResponse, Formatting.Indented));
             }
         }
 
-        static private string GetErrorMessages(Exception ex)
+        static private List<string> GetErrorMessages(Exception ex)
         {
             var messages = new List<string>();
             while (ex != null)
@@ -71,7 +74,7 @@ namespace Events.Application.Middleware
                 messages.Add(ex.Message);
                 ex = ex.InnerException;
             }
-            return JsonConvert.SerializeObject(messages, Formatting.Indented);
+            return messages;
         }
     }
 }
