@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Events.Infrastructure", "Ev
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Events.MigrationTool", "Events.MigrationTool\Events.MigrationTool.csproj", "{24EDAD18-E0F9-4449-A721-506BAD44B25D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Events.UnitTests", "Events.UnitTests\Events.UnitTests.csproj", "{0D651621-0484-4B39-B23A-076D536135B0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{24EDAD18-E0F9-4449-A721-506BAD44B25D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24EDAD18-E0F9-4449-A721-506BAD44B25D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24EDAD18-E0F9-4449-A721-506BAD44B25D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D651621-0484-4B39-B23A-076D536135B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D651621-0484-4B39-B23A-076D536135B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D651621-0484-4B39-B23A-076D536135B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D651621-0484-4B39-B23A-076D536135B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
