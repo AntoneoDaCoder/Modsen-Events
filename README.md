@@ -9,7 +9,6 @@ Deployment guide:
 2. (First time run) docker-compose build --parallel
 3. docker-compose up -d 
 The application has now been successfully deployed to a Docker container and is ready to process requests.
---------------------------------------------------
 
 
 
@@ -28,13 +27,13 @@ Valid request examples and server answers for each service are listed below
 Auth service
 
 Login:
-![login](./Examples/Auth service/login.png)
+![alt text](https://github.com/AntoneoDaCoder/Modsen-Events/blob/main/Examples/Auth service/login.png)
 
 Register:
-![register](./Examples/Auth service/register.png)
+![alt text](https://github.com/AntoneoDaCoder/Modsen-Events/blob/main/Examples/Auth service/register.png)
 
 Refresh:
-![refresh](./Examples/Auth service/refresh.png)
+![alt text](https://github.com/AntoneoDaCoder/Modsen-Events/blob/main/Examples/Auth service/refresh.png)
 
 --------------------------------------------------
 
