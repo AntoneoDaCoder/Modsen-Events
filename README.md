@@ -26,13 +26,13 @@ Valid request examples and server answers for each service are listed below
 Auth service
 
 Login:
-![alt text](https://github.com/AntoneoDaCoder/Modsen-Events/blob/main/Examples/Auth service/login.png)
+![alt text](https://github.com/AntoneoDaCoder/Modsen-Events/tree/main/Examples/Auth service/login.png)
 
 Register:
-![alt text](https://github.com/AntoneoDaCoder/Modsen-Events/blob/main/Examples/Auth service/register.png)
+![alt text](https://github.com/AntoneoDaCoder/Modsen-Events/tree/main/Examples/Auth service/register.png)
 
 Refresh:
-![alt text](https://github.com/AntoneoDaCoder/Modsen-Events/blob/main/Examples/Auth service/refresh.png)
+![alt text](https://github.com/AntoneoDaCoder/Modsen-Events/tree/main/Examples/Auth service/refresh.png)
 
 
 
