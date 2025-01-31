@@ -51,11 +51,11 @@ namespace Events.Infrastructure.Repositories
                     using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                     {
                         fileBytes = new byte[stream.Length];
-                        await stream.ReadExactlyAsync(fileBytes.AsMemory(0,fileBytes.Length));
+                        await stream.ReadExactlyAsync(fileBytes.AsMemory(0, fileBytes.Length));
                     }
                     var options = new DistributedCacheEntryOptions
                     {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
                     };
                     await _imageCache.SetAsync(fileName, fileBytes, options);
                     return (fileBytes, Enumerable.Empty<string>());
@@ -65,6 +65,23 @@ namespace Events.Infrastructure.Repositories
             catch (Exception ex)
             {
                 return (Array.Empty<byte>(), new[] { ex.Message });
+            }
+        }
+        public async Task<(bool, IEnumerable<string>)> DeleteEventImageAsync(string webRootPath, string rootDir, string fileName)
+        {
+            try
+            {
+                var filePath = Path.Combine(webRootPath, rootDir, fileName);
+                if (File.Exists(filePath))
+                    File.Delete(filePath);
+                var cachedImage = await _imageCache.GetAsync(fileName);
+                if (cachedImage?.Length > 0)
+                    await _imageCache.RemoveAsync(fileName);
+                return (true, Enumerable.Empty<string>());
+            }
+            catch (Exception ex)
+            {
+                return (false, new[] { ex.Message });
             }
         }
     }

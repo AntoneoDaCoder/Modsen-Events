@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Events.Core.Abstractions;
 using Events.Core.Contracts;
-using Events.Core.Models;
 using Events.Infrastructure.DbContexts;
 using Events.Infrastructure.DbEntities;
 using Microsoft.AspNetCore.Identity;
