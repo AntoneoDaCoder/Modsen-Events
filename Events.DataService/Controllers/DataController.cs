@@ -8,6 +8,7 @@ using Events.Application.Extensions.Misc;
 using System.Linq.Expressions;
 using System.Security.Cryptography;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 namespace Events.DataService.Controllers
 {
     [ApiController]
@@ -57,7 +58,7 @@ namespace Events.DataService.Controllers
             return NotFound("There are no events.");
         }
         [HttpGet]
-        [Route("{eventId:guid}")]
+        [Route("event/{eventId:guid}")]
         public async Task<IActionResult> GetEventByIdAsync(Guid eventId)
         {
             var @event = await _dataService.GetEventByIdAsync(eventId.ToString());
@@ -66,7 +67,7 @@ namespace Events.DataService.Controllers
             return StatusCode(200, @event);
         }
         [HttpGet]
-        [Route("")]
+        [Route("event")]
         public async Task<IActionResult> GetEventByNameAsync([FromQuery(Name = "name")] string name)
         {
             var @event = await _dataService.GetEventByNameAsync(name);
@@ -75,11 +76,20 @@ namespace Events.DataService.Controllers
             return StatusCode(200, @event);
         }
         [HttpGet]
+        [Route("participant")]
+        public async Task<IActionResult> GetParticipantByEmail([FromQuery(Name = "email")] string email)
+        {
+            var participant = await _dataService.GetParticipantByEmailAsync(email);
+            if (participant is null)
+                return NotFound("Such participant doesn't exist");
+            return StatusCode(200, participant);
+        }
+        [HttpGet]
         [Route("filter")]
         public async Task<IActionResult> GetPagedEventsByCriterionAsync
-            ([FromQuery] DateOnly? date, [FromQuery] string? location, [FromQuery] string? category, [FromQuery] int page, [FromQuery] int pageSize)
+            ([FromQuery] string? date, [FromQuery] string? location, [FromQuery] string? category, [FromQuery] int page, [FromQuery] int pageSize)
         {
-            if (string.IsNullOrEmpty(category) && !date.HasValue && string.IsNullOrEmpty(location))
+            if (string.IsNullOrEmpty(category) && !string.IsNullOrEmpty(date) && string.IsNullOrEmpty(location))
                 return BadRequest("You must specify at least 1 filter criterion.");
 
             List<Expression<Func<Event, bool>>> predicates = new();
@@ -87,8 +97,8 @@ namespace Events.DataService.Controllers
                 predicates.Add(ev => ev.Category == category);
             if (!string.IsNullOrEmpty(location))
                 predicates.Add(ev => ev.Location == location);
-            if (date.HasValue)
-                predicates.Add(ev => ev.Date == date.Value);
+            if (!string.IsNullOrEmpty(date))
+                predicates.Add(ev => ev.Date == DateOnly.ParseExact(date, "dd-MM-yyyy"));
 
             var res = await _dataService.GetPagedEventsByCriterionAsync(PredicateExtensions.CombinePredicates(predicates), page, pageSize);
             if (res.Count > 0)

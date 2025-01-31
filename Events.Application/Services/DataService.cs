@@ -11,17 +11,19 @@ namespace Events.Application.Services
         private readonly IEventParticipantRepository _eventParticipantRepository;
         private readonly IImageRepository _imageRepository;
         private readonly IEventRepository _eventRepository;
+        private readonly IParticipantRepository _participantRepository;
         private readonly IValidator<(int, int)> _pageValidator;
         private readonly IValidator<Event> _eventValidator;
         public DataService(IEventParticipantRepository eventParticipantRepository,
             IEventRepository eventRepository, IValidator<(int, int)> pageValidator, IValidator<Event> eventValidator
-            , IImageRepository imageRepository)
+            , IParticipantRepository participantRepository, IImageRepository imageRepository)
         {
             _eventParticipantRepository = eventParticipantRepository;
             _eventRepository = eventRepository;
             _pageValidator = pageValidator;
             _eventValidator = eventValidator;
             _imageRepository = imageRepository;
+            _participantRepository = participantRepository;
         }
         public async Task RegisterParticipantAsync(string eventId, string participantId)
         {
@@ -90,6 +92,10 @@ namespace Events.Application.Services
             var (res, errors) = await _eventRepository.DeleteAsync(Guid.Parse(id));
             if (!res && errors.Any())
                 throw EventsException.RaiseException<ServiceException>("Data service failed to delete event [internal error]", errors);
+        }
+        public async Task<Participant?> GetParticipantByEmailAsync(string email)
+        {
+            return await _participantRepository.GetByEmailAsync(email);
         }
         public async Task<List<Event>> GetPagedEventsByCriterionAsync(Expression<Func<Event, bool>> filter, int index, int pageSize)
         {

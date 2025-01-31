@@ -76,6 +76,8 @@ services:
       - "443:443"
     networks:
       - events-network
+    depends_on:
+      - api-gateway
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
       - ./nginx/mime.types:/etc/nginx/mime.types
@@ -120,3 +122,6 @@ volumes:
     
 networks:
   events-network:
+    name: events-network
+    driver: bridge
+    external: true

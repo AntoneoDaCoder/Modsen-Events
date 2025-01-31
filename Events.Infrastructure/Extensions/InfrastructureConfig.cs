@@ -40,6 +40,7 @@ namespace Events.Infrastructure.Extensions
             services.AddScoped<IEventParticipantRepository, EventParticipantRepository>();
             services.AddScoped<IImageRepository, ImageRepository>();
             services.AddScoped<IEventRepository, EventRepository>();
+            services.AddScoped<IParticipantRepository,ParticipantRepository>();
             services.AddStackExchangeRedisCache
                 (
                 options =>

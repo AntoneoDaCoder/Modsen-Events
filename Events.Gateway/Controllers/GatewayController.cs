@@ -29,14 +29,15 @@ namespace Events.Gateway.Controllers
         }
 
         [Route("events/{**any}")]
+        [Route("participants/{**any}")]
         [Authorize(Policy = "AgeOver18")]
         public async Task<IActionResult> HandleDataRequest(string? any)
         {
             var jwtToken = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
             var contentType = Request.ContentType?.ToLower();
-            HttpContent requestContent;
+            HttpContent? requestContent = null;
             IEnumerable<KeyValuePair<string, string?[]>>? optionalHeaders = null;
-            if (contentType.StartsWith("multipart/form-data"))
+            if (contentType != null && contentType.StartsWith("multipart/form-data"))
             {
                 var form = await Request.ReadFormAsync();
                 var content = new MultipartFormDataContent();
@@ -53,7 +54,7 @@ namespace Events.Gateway.Controllers
                 if (Request.Headers.IfNoneMatch.Count > 0)
                     optionalHeaders = [new("If-None-Match", Request.Headers.IfNoneMatch.ToArray())];
             }
-            else
+            else if (contentType != null)
             {
                 using var reader = new StreamReader(Request.Body);
                 var bodyContent = await reader.ReadToEndAsync();

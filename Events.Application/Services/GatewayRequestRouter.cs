@@ -11,7 +11,7 @@ namespace Events.Application.Services
             _clientFactory = factory;
         }
         public async Task<HttpResponseMessage?> SendRequestAsync
-            (string who, string where, HttpContent what, string method, string? token = null,
+            (string who, string where, HttpContent? what, string method, string? token = null,
             IEnumerable<KeyValuePair<string, string?[]>>? additionalHeaders = null)
         {
             var client = _clientFactory.CreateClient(who);
