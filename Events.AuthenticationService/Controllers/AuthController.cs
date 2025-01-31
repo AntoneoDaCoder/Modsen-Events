@@ -4,7 +4,6 @@ using Events.Application.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using FluentValidation;
 using AutoMapper;
-using System.Text;
 
 namespace Events.AuthenticationService.Controllers
 {
@@ -66,7 +65,7 @@ namespace Events.AuthenticationService.Controllers
             {
                 var p = _mapper.Map<Participant>(registerDto);
                 await _authService.RegisterParticipantAsync(p, registerDto.Password);
-                return StatusCode(201);
+                return StatusCode(201, "New participant has been successfully registered.");
             }
             foreach (var error in validationResult.Errors)
                 ModelState.TryAddModelError(error.PropertyName, error.ErrorMessage);
