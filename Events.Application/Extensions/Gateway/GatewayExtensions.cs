@@ -23,7 +23,16 @@ namespace Events.Application.Extensions.Gateway
                 {
                     client.BaseAddress = new Uri("http://auth-service:8081/");
                 }
+
             );
+            services.AddHttpClient
+           (
+               "data-service", client =>
+               {
+                   client.BaseAddress = new Uri("http://data-service:8082/");
+               }
+
+           );
         }
         public static void ConfigureAuthorization(this IServiceCollection services, IConfiguration conf)
         {
@@ -31,11 +40,9 @@ namespace Events.Application.Extensions.Gateway
             var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET");
 
 
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("AgeOver18", policy =>
+            services.AddAuthorizationBuilder()
+                .AddPolicy("AgeOver18", policy =>
                     policy.Requirements.Add(new AgeRequirement(18)));
-            });
 
             services.AddAuthentication(opt =>
             {
@@ -53,7 +60,7 @@ namespace Events.Application.Extensions.Gateway
 
                     ValidIssuer = jwtSettings["validIssuer"],
                     ValidAudience = jwtSettings["validAudience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey ?? conf.GetSection("JWT_SECRET").Value!)),
                 };
             });
         }
