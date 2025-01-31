@@ -23,7 +23,6 @@ In my case Docker allowed nginx to start up on port 443 and requests couldn't re
 Valid request examples and server answers for each service are listed below
 
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Auth service
 
 Login:
@@ -35,7 +34,7 @@ Register:
 Refresh:
 ![alt text](https://github.com/AntoneoDaCoder/Modsen-Events/blob/main/Examples/Auth service/refresh.png)
 
---------------------------------------------------
+
 
 Data service
 
