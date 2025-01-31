@@ -16,4 +16,4 @@ In my case Docker allowed nginx to start up on port 443 and requests couldn't re
 
 
 
-Valid request examples and server answers for each service are listed in Examples/ folder for each available service.
+Valid request examples and server answers for each service are listed in Examples/ folder.
