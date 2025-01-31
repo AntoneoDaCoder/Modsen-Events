@@ -19,6 +19,7 @@ namespace Events.Core.Abstractions
         Task DeleteEventAsync(string id);
         Task<List<Event>> GetPagedEventsByCriterionAsync(Expression<Func<Event, bool>> filter, int index, int pageSize);
         Task SaveEventImageAsync(string id, string webRootPath, string rootDir, Stream image);
+        Task DeleteEventImageAsync(string id, string webRootPath, string rootDir);
         Task<byte[]> GetEventImageAsync(string id, string webRootPath, string rootDir);
     }
 }
