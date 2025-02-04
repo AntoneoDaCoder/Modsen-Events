@@ -18,21 +18,17 @@ namespace Events.Infrastructure.Repositories
         public async Task<Participant?> GetByIdAsync(Guid id)
         {
             var pEntity = await _participantsManager.FindByIdAsync(id.ToString());
-            if (pEntity is not null)
-                return _mapper.Map<Participant>(pEntity);
-            return null;
+            return _mapper.Map<Participant>(pEntity);
         }
         public async Task<(bool, Participant?)> CheckPasswordAsync(string email, string password)
         {
             var actualEntity = await _participantsManager.FindByEmailAsync(email);
-            return (await _participantsManager.CheckPasswordAsync(actualEntity, password), _mapper.Map<Participant>(actualEntity));
+            return (await _participantsManager.CheckPasswordAsync(actualEntity!, password), _mapper.Map<Participant>(actualEntity));
         }
         public async Task<Participant?> GetByEmailAsync(string email)
         {
             var pEntity = await _participantsManager.FindByEmailAsync(email);
-            if (pEntity is not null)
-                return _mapper.Map<Participant>(pEntity);
-            return null;
+            return _mapper.Map<Participant>(pEntity);
         }
         public async Task<List<Participant>> GetPagedAsync(int index, int pageSize)
         {
@@ -48,8 +44,7 @@ namespace Events.Infrastructure.Repositories
         public async Task<(bool, IEnumerable<string>)> UpdateAsync(Participant participant)
         {
             var pEntity = await _participantsManager.FindByIdAsync(participant.Id.ToString());
-            if (pEntity is not null)
-                _mapper.Map(participant, pEntity);
+            _mapper.Map(participant, pEntity);
             var result = await _participantsManager.UpdateAsync(pEntity!);
             return (result.Succeeded, result.Errors.Select(e => e.Description));
         }
