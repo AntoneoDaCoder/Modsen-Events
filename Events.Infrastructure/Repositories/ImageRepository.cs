@@ -9,80 +9,54 @@ namespace Events.Infrastructure.Repositories
         {
             _imageCache = cache;
         }
-        public async Task<(string, IEnumerable<string>)> SaveEventImageAsync(string webRootPath, string rootDir, string fileName, Stream image)
+        public async Task<string> SaveEventImageAsync(string webRootPath, string rootDir, string fileName, Stream image)
         {
             var uploadsDir = Path.Combine(webRootPath, rootDir);
             Directory.CreateDirectory(uploadsDir);
             var filePath = Path.Combine(uploadsDir, fileName);
-            try
+            if (File.Exists(filePath))
             {
-                if (File.Exists(filePath))
-                {
-                    File.Delete(filePath);
-                    _imageCache.Remove(fileName);
-                }
-                using (var diskFile = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    await image.CopyToAsync(diskFile);
-                }
-                var options = new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
-                };
-                await _imageCache.SetAsync(fileName, File.ReadAllBytes(filePath), options);
-                return (Path.Combine(rootDir, fileName), Enumerable.Empty<string>());
+                File.Delete(filePath);
+                _imageCache.Remove(fileName);
             }
-            catch (Exception ex)
+            using (var diskFile = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                return (string.Empty, new List<string>() { ex.Message });
+                await image.CopyToAsync(diskFile);
             }
+            var options = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+            };
+            await _imageCache.SetAsync(fileName, File.ReadAllBytes(filePath), options);
+            return Path.Combine(rootDir, fileName);
         }
-        public async Task<(byte[], IEnumerable<string>)> GetEventImageAsync(string webRootPath, string rootDir, string fileName)
+        public async Task<byte[]> GetEventImageAsync(string webRootPath, string rootDir, string fileName)
         {
-            try
+            var imageBytes = await _imageCache.GetAsync(fileName);
+            if (imageBytes is not null)
+                return imageBytes;
+            var filePath = Path.Combine(webRootPath, rootDir, fileName);
+            byte[] fileBytes;
+            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
-                var imageBytes = await _imageCache.GetAsync(fileName);
-                if (imageBytes is not null)
-                    return (imageBytes, Enumerable.Empty<string>());
-                var filePath = Path.Combine(webRootPath, rootDir, fileName);
-                if (File.Exists(filePath))
-                {
-                    byte[] fileBytes;
-                    using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-                    {
-                        fileBytes = new byte[stream.Length];
-                        await stream.ReadExactlyAsync(fileBytes.AsMemory(0, fileBytes.Length));
-                    }
-                    var options = new DistributedCacheEntryOptions
-                    {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
-                    };
-                    await _imageCache.SetAsync(fileName, fileBytes, options);
-                    return (fileBytes, Enumerable.Empty<string>());
-                }
-                return (Array.Empty<byte>(), new[] { "File doesn't exist." });
+                fileBytes = new byte[stream.Length];
+                await stream.ReadExactlyAsync(fileBytes.AsMemory(0, fileBytes.Length));
             }
-            catch (Exception ex)
+            var options = new DistributedCacheEntryOptions
             {
-                return (Array.Empty<byte>(), new[] { ex.Message });
-            }
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+            };
+            await _imageCache.SetAsync(fileName, fileBytes, options);
+            return fileBytes;
         }
-        public async Task<(bool, IEnumerable<string>)> DeleteEventImageAsync(string webRootPath, string rootDir, string fileName)
+        public async Task DeleteEventImageAsync(string webRootPath, string rootDir, string fileName)
         {
-            try
-            {
-                var filePath = Path.Combine(webRootPath, rootDir, fileName);
-                if (File.Exists(filePath))
-                    File.Delete(filePath);
-                var cachedImage = await _imageCache.GetAsync(fileName);
-                if (cachedImage?.Length > 0)
-                    await _imageCache.RemoveAsync(fileName);
-                return (true, Enumerable.Empty<string>());
-            }
-            catch (Exception ex)
-            {
-                return (false, new[] { ex.Message });
-            }
+            var filePath = Path.Combine(webRootPath, rootDir, fileName);
+            if (File.Exists(filePath))
+                File.Delete(filePath);
+            var cachedImage = await _imageCache.GetAsync(fileName);
+            if (cachedImage?.Length > 0)
+                await _imageCache.RemoveAsync(fileName);
         }
     }
 }
