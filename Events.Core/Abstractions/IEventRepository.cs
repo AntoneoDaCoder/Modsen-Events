@@ -6,6 +6,7 @@ namespace Events.Core.Abstractions
     {
         Task<List<Event>> GetPagedAsync(int index, int pageSize);
         Task<Event?> GetByIdAsync(Guid id);
+        Task<(Event?, int?)> GetByIdWithParticipantsAsync(Guid id);
         Task<Event?> GetByNameAsync(string name);
         Task CreateAsync(Event ev);
         Task UpdateAsync(Event target, Event ev);

@@ -28,6 +28,11 @@ namespace Events.Infrastructure.Repositories
             var eEntity = await _dbContext.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
             return _mapper.Map<Event>(eEntity);
         }
+        public async Task<(Event?, int?)> GetByIdWithParticipantsAsync(Guid id)
+        {
+            var eEntity = await _dbContext.Events.AsNoTracking().Include(e => e.EventParticipants).FirstOrDefaultAsync(e => e.Id == id);
+            return (_mapper.Map<Event>(eEntity), eEntity?.EventParticipants.Count);
+        }
         public async Task<Event?> GetByNameAsync(string name)
         {
             var eEntity = await _dbContext.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Name == name);

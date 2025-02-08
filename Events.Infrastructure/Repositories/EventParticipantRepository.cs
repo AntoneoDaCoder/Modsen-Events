@@ -11,58 +11,22 @@ namespace Events.Infrastructure.Repositories
     public class EventParticipantRepository : IEventParticipantRepository
     {
         private readonly EventsDbContext _dbContext;
-        private readonly UserManager<ParticipantEntity> _participantManager;
         private readonly IMapper _mapper;
-        public EventParticipantRepository(EventsDbContext dbContext, UserManager<ParticipantEntity> manager, IMapper mapper)
+        public EventParticipantRepository(EventsDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
-            _participantManager = manager;
             _mapper = mapper;
         }
-        public async Task<(bool, IEnumerable<string>)> RegisterParticipantAsync(Guid eventId, string participantId)
+        public async Task RegisterParticipantAsync(Guid eventId, string participantId)
         {
-            var errors = new List<string>();
-            var eEntity = await _dbContext.Events.AsNoTracking().Include(e => e.EventParticipants).FirstOrDefaultAsync(e => e.Id == eventId);
-            var pEntity = await _participantManager.FindByIdAsync(participantId.ToString());
-
-            if (eEntity is null)
-                errors.Add("Event not found.");
-            if (pEntity is null)
-                errors.Add("Participant not found.");
-            if (eEntity!.EventParticipants.Count + 1 > eEntity.MaxParticipants)
-                errors.Add("Event has no vacant slots.");
-
-            if (errors.Count != 0)
-                return (false, errors);
-
-
             var eventParticipantEntity = new EventParticipantEntity()
             {
                 EventId = eventId,
                 ParticipantId = participantId,
                 RegisterDate = DateOnly.FromDateTime(DateTime.UtcNow)
             };
-
-            try
-            {
-                _dbContext.EventParticipants.Add(eventParticipantEntity);
-                await _dbContext.SaveChangesAsync();
-                return (true, Enumerable.Empty<string>());
-            }
-            catch (DbUpdateException ex)
-            {
-                errors.Add(ex.Message);
-                if (ex.InnerException != null)
-                {
-                    errors.Add(ex.InnerException.Message);
-                }
-                return (false, errors);
-            }
-            catch (Exception ex)
-            {
-                errors.Add(ex.Message);
-                return (false, errors);
-            }
+            _dbContext.EventParticipants.Add(eventParticipantEntity);
+            await _dbContext.SaveChangesAsync();
         }
         public async Task<List<ParticipantWithDateDTO>> GetPagedParticipantsAsync(Guid eventId, int index, int pageSize)
         {
@@ -73,10 +37,7 @@ namespace Events.Infrastructure.Repositories
                 .Skip((index - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-            if (eventParticipants.Count == 0)
-                return [];
-            var participants = _mapper.Map<List<ParticipantWithDateDTO>>(eventParticipants);
-            return participants;
+            return _mapper.Map<List<ParticipantWithDateDTO>>(eventParticipants);
         }
         public async Task<ParticipantWithDateDTO?> GetEventParticipantByIdAsync(Guid eventId, string participantId)
         {
@@ -86,32 +47,16 @@ namespace Events.Infrastructure.Repositories
                 .FirstOrDefaultAsync(ep => ep.EventId == eventId && ep.ParticipantId == participantId);
             return _mapper.Map<ParticipantWithDateDTO>(eventParticipant);
         }
-        public async Task<(bool, IEnumerable<string>)> UnregisterParticipantAsync(Guid eventId, string participantId)
+        public async Task UnregisterParticipantAsync(Guid eventId, string participantId, DateOnly regDate)
         {
-            var eventParticipantEntity = await _dbContext.EventParticipants.FirstOrDefaultAsync(ep => ep.EventId == eventId && ep.ParticipantId == participantId);
-            if (eventParticipantEntity is not null)
+            var eventParticipantEntity = new EventParticipantEntity()
             {
-                try
-                {
-                    _dbContext.EventParticipants.Remove(eventParticipantEntity);
-                    await _dbContext.SaveChangesAsync();
-                    return (true, Enumerable.Empty<string>());
-                }
-                catch (DbUpdateException ex)
-                {
-                    var errors = new List<string>() { ex.Message };
-                    if (ex.InnerException != null)
-                    {
-                        errors.Add(ex.InnerException.Message);
-                    }
-                    return (false, errors);
-                }
-                catch (Exception ex)
-                {
-                    return (false, new List<string>() { ex.Message });
-                }
-            }
-            return (false, new List<string>() { "Event participant not found." });
+                EventId = eventId,
+                ParticipantId = participantId,
+                RegisterDate = regDate
+            };
+            _dbContext.EventParticipants.Remove(eventParticipantEntity);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

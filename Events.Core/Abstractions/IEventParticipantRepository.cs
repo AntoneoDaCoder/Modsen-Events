@@ -3,9 +3,9 @@ namespace Events.Core.Abstractions
 {
     public interface IEventParticipantRepository
     {
-        Task<(bool, IEnumerable<string>)> RegisterParticipantAsync(Guid eventId, string participantId);
+        Task RegisterParticipantAsync(Guid eventId, string participantId);
         Task<List<ParticipantWithDateDTO>> GetPagedParticipantsAsync(Guid eventId, int index, int pageSize);
-        Task<(bool, IEnumerable<string>)> UnregisterParticipantAsync(Guid eventId, string participantId);
+        Task UnregisterParticipantAsync(Guid eventId, string participantId, DateOnly regDate);
         Task<ParticipantWithDateDTO?> GetEventParticipantByIdAsync(Guid eventId, string participantId);
     }
 }
