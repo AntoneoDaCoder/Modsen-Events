@@ -1,8 +1,5 @@
 ﻿using Events.Core.Contracts;
 using Events.Core.Models;
-using System;
-using System.Linq.Expressions;
-
 namespace Events.Core.Abstractions
 {
     public interface IDataService
@@ -18,7 +15,7 @@ namespace Events.Core.Abstractions
         Task CreateEventAsync(Event ev);
         Task UpdateEventAsync(string id, Event ev);
         Task DeleteEventAsync(string id);
-        Task<List<Event>> GetPagedEventsByCriterionAsync(Expression<Func<Event, bool>> filter, int index, int pageSize);
+        Task<List<Event>> GetPagedEventsByCriterionAsync(string? category, string? location, string? date, int index, int pageSize);
         Task SaveEventImageAsync(string id, string webRootPath, string rootDir, Stream image);
         Task DeleteEventImageAsync(string id, string webRootPath, string rootDir);
         Task<byte[]> GetEventImageAsync(string id, string webRootPath, string rootDir);

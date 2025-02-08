@@ -104,6 +104,7 @@ namespace Events.Application.Services
         {
             var principal = GetPrincipalFromExpiredToken(access);
             var p = await _participantRepository.GetByIdAsync(Guid.Parse(principal.Claims.First(x => x.Type == ClaimTypes.UserData).Value));
+
             if (p is null)
                 throw EventsException.RaiseException<ServiceException>("Auth service failed to refresh token [internal error]", ["participant doesn't exist"]);
 
@@ -113,9 +114,12 @@ namespace Events.Application.Services
             var (newAccessToken, refreshToken) = await CreateToken(p, refresh: false);
             return (newAccessToken, p.RefreshToken);
         }
-        public async Task<(bool, Participant?)> ValidateParticipantAsync(string email, string password)
+        public async Task<Participant> ValidateParticipantAsync(string email, string password)
         {
-            return await _participantRepository.CheckPasswordAsync(email, password);
+            var (success, participant) = await _participantRepository.CheckPasswordAsync(email, password);
+            if(!success && participant is null)
+                throw EventsException.RaiseException<ServiceException>("Auth service failed to verify credentials [internal error]", ["incorrect password or participant does not exist"]);
+            return participant!;
         }
         public async Task RegisterParticipantAsync(Participant p, string password)
         {
