@@ -7,9 +7,9 @@ namespace Events.Core.Abstractions
         Task<List<Event>> GetPagedAsync(int index, int pageSize);
         Task<Event?> GetByIdAsync(Guid id);
         Task<Event?> GetByNameAsync(string name);
-        Task<(bool, IEnumerable<string>)> CreateAsync(Event ev);
-        Task<(bool, IEnumerable<string>)> UpdateAsync(Guid id, Event ev);
-        Task<(bool, IEnumerable<string>)> DeleteAsync(Guid id);
-        Task<List<Event>> GetByCriterionAsync(Expression<Func<Event, bool>> filter,int index,int pageSize);
+        Task CreateAsync(Event ev);
+        Task UpdateAsync(Event target, Event ev);
+        Task DeleteAsync(Event target);
+        Task<List<Event>> GetByCriterionAsync(Expression<Func<Event, bool>> filter, int index, int pageSize);
     }
 }

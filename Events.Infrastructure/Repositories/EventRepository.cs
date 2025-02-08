@@ -6,6 +6,7 @@ using Events.Infrastructure.DbContexts;
 using Events.Infrastructure.DbEntities;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Text.Json;
 namespace Events.Infrastructure.Repositories
 {
     public class EventRepository : IEventRepository
@@ -25,93 +26,32 @@ namespace Events.Infrastructure.Repositories
         public async Task<Event?> GetByIdAsync(Guid id)
         {
             var eEntity = await _dbContext.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
-            if (eEntity is not null)
-                return _mapper.Map<Event>(eEntity);
-            return null;
+            return _mapper.Map<Event>(eEntity);
         }
         public async Task<Event?> GetByNameAsync(string name)
         {
             var eEntity = await _dbContext.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Name == name);
-            if (eEntity is not null)
-                return _mapper.Map<Event>(eEntity);
-            return null;
+            return _mapper.Map<Event>(eEntity);
         }
-        public async Task<(bool, IEnumerable<string>)> CreateAsync(Event ev)
+        public async Task CreateAsync(Event ev)
         {
             var eEntity = _mapper.Map<EventEntity>(ev);
-            try
-            {
-                _dbContext.Events.Add(eEntity);
-                int res = await _dbContext.SaveChangesAsync();
-                return (res > 0, Enumerable.Empty<string>());
-            }
-            catch (DbUpdateException ex)
-            {
-                var errors = new List<string> { ex.Message };
-                if (ex.InnerException != null)
-                {
-                    errors.Add(ex.InnerException.Message);
-                }
-                return (false, errors);
-            }
-            catch (Exception ex)
-            {
-                return (false, new List<string> { ex.Message });
-            }
+            _dbContext.Events.Add(eEntity);
+            await _dbContext.SaveChangesAsync();
         }
-        public async Task<(bool, IEnumerable<string>)> UpdateAsync(Guid id, Event ev)
+
+        public async Task UpdateAsync(Event target, Event ev)
         {
-            var eEntity = await _dbContext.Events.FirstOrDefaultAsync(e => e.Id == id);
-            if (eEntity is not null)
-            {
-                _mapper.Map(ev, eEntity);
-                try
-                {
-                    int res = await _dbContext.SaveChangesAsync();
-                    return (res > 0, Enumerable.Empty<string>());
-                }
-                catch (DbUpdateException ex)
-                {
-                    var errors = new List<string> { ex.Message };
-                    if (ex.InnerException != null)
-                    {
-                        errors.Add(ex.InnerException.Message);
-                    }
-                    return (false, errors);
-                }
-                catch (Exception ex)
-                {
-                    return (false, new List<string> { ex.Message });
-                }
-            }
-            return (false, new List<string> { "Event not found" });
+            var eEntity = _mapper.Map<EventEntity>(target);
+            _mapper.Map(ev, eEntity);
+            _dbContext.Events.Update(eEntity);
+            await _dbContext.SaveChangesAsync();
         }
-        public async Task<(bool, IEnumerable<string>)> DeleteAsync(Guid id)
+        public async Task DeleteAsync(Event target)
         {
-            var eEntity = await _dbContext.Events.FirstOrDefaultAsync(e => e.Id == id);
-            if (eEntity is not null)
-            {
-                _dbContext.Events.Remove(eEntity);
-                try
-                {
-                    int res = await _dbContext.SaveChangesAsync();
-                    return (res > 0, Enumerable.Empty<string>());
-                }
-                catch (DbUpdateException ex)
-                {
-                    var errors = new List<string> { ex.Message };
-                    if (ex.InnerException != null)
-                    {
-                        errors.Add(ex.InnerException.Message);
-                    }
-                    return (false, errors);
-                }
-                catch (Exception ex)
-                {
-                    return (false, new List<string> { ex.Message });
-                }
-            }
-            return (false, new List<string> { "Event not found" });
+            var eEntity = _mapper.Map<EventEntity>(target);
+            _dbContext.Events.Remove(eEntity);
+            await _dbContext.SaveChangesAsync();
         }
         public async Task<List<Event>> GetByCriterionAsync(Expression<Func<Event, bool>> filter, int index, int pageSize)
         {
