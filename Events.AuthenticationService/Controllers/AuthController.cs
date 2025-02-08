@@ -32,13 +32,9 @@ namespace Events.AuthenticationService.Controllers
             var validationResult = _loginValidator.Validate(loginDto);
             if (validationResult.IsValid)
             {
-                (bool success, Participant? res) = await _authService.ValidateParticipantAsync(loginDto.Email, loginDto.Password);
-                if (success)
-                {
-                    (string access, string refresh) = await _authService.CreateToken(res!, refresh: true);
-                    return StatusCode(200, new { access, refresh });
-                }
-                return BadRequest("Participant doesn't exist or password is incorrect.");
+                var res = await _authService.ValidateParticipantAsync(loginDto.Email, loginDto.Password);
+                (string access, string refresh) = await _authService.CreateToken(res!, refresh: true);
+                return StatusCode(200, new { access, refresh });
             }
             foreach (var error in validationResult.Errors)
                 ModelState.TryAddModelError(error.PropertyName, error.ErrorMessage);
