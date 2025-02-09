@@ -117,7 +117,7 @@ namespace Events.Application.Services
         public async Task<Participant> ValidateParticipantAsync(string email, string password)
         {
             var (success, participant) = await _participantRepository.CheckPasswordAsync(email, password);
-            if(!success && participant is null)
+            if (!success && participant is null)
                 throw EventsException.RaiseException<ServiceException>("Auth service failed to verify credentials [internal error]", ["incorrect password or participant does not exist"]);
             return participant!;
         }
@@ -127,7 +127,7 @@ namespace Events.Application.Services
             if (validationResult.IsValid)
             {
                 var (res, errors) = await _participantRepository.CreateAsync(p, password);
-                if (!res && errors.Any())
+                if (errors.Any())
                     throw EventsException.RaiseException<ServiceException>("Auth service failed to add participant [internal error]", errors);
             }
             else
