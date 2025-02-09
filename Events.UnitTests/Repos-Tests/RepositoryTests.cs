@@ -94,9 +94,8 @@ namespace Events.Tests.Repositories
         public async Task CreateAsync_ReturnsSuccess_WhenCreationIsSuccessful()
         {
             var participant = Participant.CreateParticipant(Guid.NewGuid(), "name", "surname", DateOnly.ParseExact("01/01/1990", "dd/MM/yyyy"), "xdd@gmail.com");
-            var (isSuccess, errors) = await _repository.CreateAsync(participant, "Password123!");
+            var (id, errors) = await _repository.CreateAsync(participant, "Password123!");
 
-            Assert.True(isSuccess);
             Assert.Empty(errors);
         }
 
@@ -105,9 +104,7 @@ namespace Events.Tests.Repositories
         {
             var participant = Participant.CreateParticipant(Guid.NewGuid(), "name", "surname", DateOnly.ParseExact("01/01/1990", "dd/MM/yyyy"), "invalid email");
 
-            var (isSuccess, errors) = await _repository.CreateAsync(participant, "Password123!");
-
-            Assert.False(isSuccess);
+            var (id, errors) = await _repository.CreateAsync(participant, "Password123!");
             Assert.NotEmpty(errors);
         }
     }
