@@ -35,11 +35,11 @@ namespace Events.Infrastructure.Repositories
             var participantEntities = await _participantsManager.Users.AsNoTracking().Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
             return _mapper.Map<List<Participant>>(participantEntities);
         }
-        public async Task<(bool, IEnumerable<string>)> CreateAsync(Participant participant, string password)
+        public async Task<(string, IEnumerable<string>)> CreateAsync(Participant participant, string password)
         {
             var participantEntity = _mapper.Map<ParticipantEntity>(participant);
             var result = await _participantsManager.CreateAsync(participantEntity, password);
-            return (result.Succeeded, result.Errors.Select(e => e.Description));
+            return (participantEntity.Id, result.Errors.Select(e => e.Description));
         }
         public async Task<(bool, IEnumerable<string>)> UpdateAsync(Participant participant)
         {

@@ -47,15 +47,10 @@ namespace Events.Infrastructure.Repositories
                 .FirstOrDefaultAsync(ep => ep.EventId == eventId && ep.ParticipantId == participantId);
             return _mapper.Map<ParticipantWithDateDTO>(eventParticipant);
         }
-        public async Task UnregisterParticipantAsync(Guid eventId, string participantId, DateOnly regDate)
+        public async Task UnregisterParticipantAsync(Guid eventId, string participantId)
         {
-            var eventParticipantEntity = new EventParticipantEntity()
-            {
-                EventId = eventId,
-                ParticipantId = participantId,
-                RegisterDate = regDate
-            };
-            _dbContext.EventParticipants.Remove(eventParticipantEntity);
+            var eventParticipantEntity = await _dbContext.EventParticipants.FirstOrDefaultAsync(ep => ep.EventId == eventId && ep.ParticipantId == participantId);
+            _dbContext.EventParticipants.Remove(eventParticipantEntity!);
             await _dbContext.SaveChangesAsync();
         }
     }

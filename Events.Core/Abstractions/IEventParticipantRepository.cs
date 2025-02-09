@@ -5,7 +5,7 @@ namespace Events.Core.Abstractions
     {
         Task RegisterParticipantAsync(Guid eventId, string participantId);
         Task<List<ParticipantWithDateDTO>> GetPagedParticipantsAsync(Guid eventId, int index, int pageSize);
-        Task UnregisterParticipantAsync(Guid eventId, string participantId, DateOnly regDate);
+        Task UnregisterParticipantAsync(Guid eventId, string participantId);
         Task<ParticipantWithDateDTO?> GetEventParticipantByIdAsync(Guid eventId, string participantId);
     }
 }
