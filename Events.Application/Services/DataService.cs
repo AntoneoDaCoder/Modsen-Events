@@ -54,7 +54,7 @@ namespace Events.Application.Services
         {
             var eventParticipant = await _eventParticipantRepository.GetEventParticipantByIdAsync(Guid.Parse(eventId), participantId);
             if (eventParticipant is not null)
-                await _eventParticipantRepository.UnregisterParticipantAsync(Guid.Parse(eventId), participantId, eventParticipant.RegisterDate);
+                await _eventParticipantRepository.UnregisterParticipantAsync(Guid.Parse(eventId), participantId);
             else
                 throw EventsException.RaiseException<ServiceException>("Data service failed to unregister participant from event [internal error]", ["participant didn't register for this event"]);
         }
